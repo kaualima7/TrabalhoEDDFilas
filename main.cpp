@@ -15,17 +15,41 @@ struct Paciente{
     int minuto;
 }; 
 
+
+//Função para atender o paciente e nao precisar repetir todos comandos em varios ifs
+void atender(queue<Paciente>& fila,
+    int horaAtendimento,
+    int minutoAtendimento,
+    int& esperaMaxima,
+    int& totalAtendidos,
+    int& atendidosDaFila){
+        if(fila.empty()) return;
+        Paciente p = fila.front();
+        fila.pop();
+        int chegada = p.hora*60 + p.minuto;
+        int atendimento = horaAtendimento*60 + minutoAtendimento;
+        int espera = atendimento - chegada;
+
+        if(espera > esperaMaxima){
+            esperaMaxima = espera;
+            }
+
+        totalAtendidos++;
+        atendidosDaFila++;
+
+}
+
 int main(){
     //Definição das filas de prioridade, seus tamanhos e total de atendidos em cada uma
-    queue <Paciente> filaVermelha; int tamVermelha = 0, atendidosVermelha = 0;
-    queue <Paciente> filaAmarela; int tamAmarela = 0, atendidosAmarela = 0;
-    queue <Paciente> filaVerde; int tamVerde = 0, atendidosVerde = 0;
-    queue <Paciente> filaBranca; int tamBranca = 0, atendidosBranca = 0;
+    queue <Paciente> filaVermelha; int atendidosVermelha = 0;
+    queue <Paciente> filaAmarela; int atendidosAmarela = 0;
+    queue <Paciente> filaVerde; int atendidosVerde = 0;
+    queue <Paciente> filaBranca; int atendidosBranca = 0;
 
     //Inicialização em 0 nas variávies de contagem
     int picoLotacao = 0, totalAtendidos = 0, esperaMaxima = 0, totalAtual = 0; 
     //Definição das variáveis de horário
-    int horaAtendimento, totalMinutosChegada, minutoAtendimento, totalMinutoAtendimento, tempoEspera;
+    int horaAtendimento, minutoAtendimento;
     //Variável do menu C-A-D-Q
     char comando;
     bool paradaLoop = true;
@@ -61,20 +85,16 @@ int main(){
                 //Push nas filas correspondentes e incremento do tamanho de acordo com a priorudade
                 if(p.prioridade == 'V'){
                     filaVermelha.push(p);
-                    tamVermelha++;
                 } else if(p.prioridade == 'A'){
                     filaAmarela.push(p);
-                    tamAmarela++;
                 } else if(p.prioridade == 'D'){
                     filaVerde.push(p);
-                    tamVerde++;
                 } else if(p.prioridade == 'B'){
                     filaBranca.push(p);
-                    tamBranca++;
                 }
 
                 //Atualização do contador de pico de lotação
-                totalAtual = tamVermelha + tamAmarela + tamVerde + tamBranca;
+                totalAtual = filaVermelha.size() + filaAmarela.size() + filaVerde.size() + filaBranca.size();
                     if(totalAtual > picoLotacao){
                     picoLotacao = totalAtual;
                 }
@@ -89,54 +109,15 @@ int main(){
                 cout << "Minuto do atendimento: " << endl;
                 cin >> minutoAtendimento;
 
+                //Aqui fica o uso da função criada lá em cima, o "atender", com os parametros certos, da push nas filas, atualiza variaveis de controle etc
                 if(!filaVermelha.empty()){
-                    pacienteAtual = filaVermelha.front();
-                    totalMinutosChegada = pacienteAtual.hora*60 + pacienteAtual.minuto;
-                    totalMinutoAtendimento = horaAtendimento*60 + minutoAtendimento;
-                    tempoEspera = totalMinutoAtendimento - totalMinutosChegada;
-                    if(tempoEspera > esperaMaxima){
-                        esperaMaxima = tempoEspera;
-                    }
-                    filaVermelha.pop();
-                    tamVermelha--;
-                    atendidosVermelha++;
-                    totalAtendidos++;
-                } else if(!filaAmarela.empty()){
-                    pacienteAtual = filaAmarela.front();
-                    totalMinutosChegada = pacienteAtual.hora*60 + pacienteAtual.minuto;
-                    totalMinutoAtendimento = horaAtendimento*60 + minutoAtendimento;
-                    tempoEspera = totalMinutoAtendimento - totalMinutosChegada;
-                    if(tempoEspera > esperaMaxima){
-                        esperaMaxima = tempoEspera;
-                    }
-                    filaAmarela.pop();
-                    tamAmarela--;
-                    totalAtendidos++;
-                    atendidosAmarela++;
-                } else if(!filaVerde.empty()){
-                    pacienteAtual = filaVerde.front();
-                    totalMinutosChegada = pacienteAtual.hora*60 + pacienteAtual.minuto;
-                    totalMinutoAtendimento = horaAtendimento*60 + minutoAtendimento;
-                    tempoEspera = totalMinutoAtendimento - totalMinutosChegada;
-                    if(tempoEspera > esperaMaxima){
-                        esperaMaxima = tempoEspera;
-                    }
-                    filaVerde.pop();
-                    tamVerde--;
-                    atendidosVerde++;
-                    totalAtendidos++;
-                } else if(!filaBranca.empty()){
-                    pacienteAtual = filaBranca.front();
-                    totalMinutosChegada = pacienteAtual.hora*60 + pacienteAtual.minuto;
-                    totalMinutoAtendimento = horaAtendimento*60 + minutoAtendimento;
-                    tempoEspera = totalMinutoAtendimento - totalMinutosChegada;
-                    if(tempoEspera > esperaMaxima){
-                        esperaMaxima = tempoEspera;
-                    }
-                    filaBranca.pop();
-                    tamBranca--;
-                    totalAtendidos++;
-                    atendidosBranca++;
+                    atender(filaVermelha, horaAtendimento, minutoAtendimento, esperaMaxima, totalAtendidos, atendidosVermelha);
+                    } else if(!filaAmarela.empty()){
+                        atender(filaAmarela, horaAtendimento, minutoAtendimento, esperaMaxima, totalAtendidos, atendidosAmarela);
+                    } else if(!filaVerde.empty()){
+                    atender(filaVerde, horaAtendimento, minutoAtendimento, esperaMaxima, totalAtendidos, atendidosVerde);
+                    } else if(!filaBranca.empty()){
+                    atender(filaBranca, horaAtendimento, minutoAtendimento, esperaMaxima, totalAtendidos, atendidosBranca);
                     }
                 else{
                     cout << horaAtendimento << " " << minutoAtendimento << " Sem pacientes aguardando atendimento" << endl;
@@ -144,6 +125,7 @@ int main(){
                 break;
             }
 
+            //Caso entrada seja 'D', mostra a sitaução atual das ilas e os atendidos
             case 'D':{
                 cout << "V:" << filaVermelha.size() 
                      << " A:" << filaAmarela.size()
@@ -152,6 +134,8 @@ int main(){
                 break;
             }
         
+
+            //Caso entrada seja 'Q', mostra o relatório final
             case 'Q':
                 cout << "---RELATÓRIO FINAL---\n"
                         "Total atendidos: " << totalAtendidos << "\n"
@@ -163,6 +147,11 @@ int main(){
                         << "Espera máxima: " << esperaMaxima << " min" << endl;
             paradaLoop = false;
             break;
+
+            //Default caso a entrada seja diferente das opções fornecidas
+            default:
+                cout << "Comando inválido" << endl;
+                break;
         }
     }
     return 0;
